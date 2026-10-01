@@ -6,7 +6,6 @@ import {
   FlatList,
   RefreshControl,
   TouchableOpacity,
-  TextInput,
   SafeAreaView,
   Image,
 } from 'react-native';
@@ -32,7 +31,6 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
 
   const fetchEvents = useCallback(async () => {
@@ -65,17 +63,12 @@ const HomeScreen = ({ navigation }) => {
     fetchEvents();
   };
 
-  // Filter events by: Category and Search query
+  // Filter events by: Category
   const filteredEvents = events.filter((event) => {
-    const matchesCategory =
+    return (
       selectedCategory === 'All' ||
-      event.category?.toLowerCase() === selectedCategory.toLowerCase();
-
-    const matchesSearch =
-      event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.location?.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesCategory && matchesSearch;
+      event.category?.toLowerCase() === selectedCategory.toLowerCase()
+    );
   });
 
   const renderHeader = () => (
@@ -110,23 +103,6 @@ const HomeScreen = ({ navigation }) => {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-
-      {/* Search Input Bar */}
-      <View style={styles.searchBar}>
-        <Text style={styles.searchIcon}>🔍</Text>
-        <TextInput
-          placeholder="Search by event title, venue, or keyword..."
-          placeholderTextColor="#94A3B8"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={styles.searchInput}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Text style={styles.clearIcon}>✕</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Category Pills Filter */}
@@ -201,9 +177,7 @@ const HomeScreen = ({ navigation }) => {
             <EmptyState
               title="No Events Found"
               message={
-                searchQuery
-                  ? `No events matching "${searchQuery}"`
-                  : selectedCategory !== 'All'
+                selectedCategory !== 'All'
                   ? `No events found in "${selectedCategory}" category.`
                   : 'Be the first to publish an amazing event!'
               }
@@ -293,36 +267,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '800',
     fontSize: 15,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 12,
-    height: 48,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  searchIcon: {
-    fontSize: 16,
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#1E293B',
-  },
-  clearIcon: {
-    fontSize: 14,
-    color: '#94A3B8',
-    paddingHorizontal: 6,
   },
   categoryList: {
     paddingVertical: 4,
