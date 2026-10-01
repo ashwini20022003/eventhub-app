@@ -332,25 +332,4 @@ Now your mobile application will communicate with your cloud backend anywhere in
 
 ---
 
-## 11. Viva Examination Q&A Guide
 
-Be prepared to answer these key questions during your SLIIT viva:
-
-### Q1: How does JWT Authentication work?
-> **Answer**: When a user logs in with valid credentials, the server signs a JSON Web Token containing the user's ID payload using a secret key (`jwt.sign`). The client stores this token in `AsyncStorage`. On subsequent requests, the Axios interceptor automatically includes it in the HTTP `Authorization: Bearer <token>` header. The server's `authMiddleware` verifies the token's cryptographic signature using `jwt.verify` and attaches the user document to `req.user`.
-
-### Q2: How does Bcrypt hashing protect passwords?
-> **Answer**: Plaintext passwords are never stored in the database. In `models/User.js`, a Mongoose `pre('save')` hook intercepts the user before saving, generates a random salt with 10 rounds (`bcrypt.genSalt(10)`), and hashes the password (`bcrypt.hash`). When logging in, `bcrypt.compare` re-hashes the incoming password with the stored salt to determine if they match, without ever decrypting the password.
-
-### Q3: How are Event and Booking related in the database?
-> **Answer**: We use referenced relationships via MongoDB `ObjectId`:
-> - `Event.createdBy` references `User._id`
-> - `Booking.userId` references `User._id`
-> - `Booking.eventId` references `Event._id`  
-> In Mongoose queries, we use `.populate('eventId')` and `.populate('userId')` to fetch full relational details in a single query.
-
-### Q4: How is seat availability calculated safely?
-> **Answer**: Before confirming a booking, the backend checks `tickets <= event.availableSeats`. If valid, it subtracts the tickets using `event.availableSeats = Math.max(0, event.availableSeats - tickets)`. If a user cancels their booking, the seats are restored using `Math.min(event.capacity, event.availableSeats + booking.numberOfTickets)`. This ensures available seats can neither drop below zero nor exceed the venue capacity.
-
-### Q5: How does Multer handle image uploads?
-> **Answer**: `uploadMiddleware.js` uses `multer.diskStorage` to save uploaded files into the `uploads/` directory. Each file is given a unique timestamped name (`event-${Date.now()}-${random}.ext`). A file filter verifies that the MIME type is JPEG, PNG, or WEBP, and enforces a 5MB size limit. The resulting filename is stored in MongoDB, and the `backend/uploads` directory is served statically using `express.static()`.
